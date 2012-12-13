@@ -1,0 +1,54 @@
+RarangiRatonga - Distributed Service Catalogue protocol, server and libraries.
+
+A service catalogue allows a service to register its address, and clients to request the addresses
+of a service. The service catalogues are distributed on all hosts in a set of clusters and communicate
+among each other to replicate the complete database of services among each other.
+
+The following design principles are important:
+- Minimum configuration
+- Fail-save
+- It should work on a 3rd party cluster like Amazon's EC2 which has no ability for multi-casting
+- Strict separation of production, test and development environments.
+
+Minimum Configuration
+---------------------
+Each host will run service catalogues on well known port numbers for each well known environment. This allows
+both a client and a service to contact a service catalogue without configuration. Well known environments are:
+- production
+- staging
+- testing
+- development
+
+The client and servers need to be configured with the name of environment. Client and servers may also be
+configured to contact a specific catalogue server, useful for individual development environments.
+
+The catalogue servers are started with the name of the environment, name of the cluster, the address:port
+to bind on, and the address:port of one or more neighbour catalogue servers for database replication.
+
+Fail-save
+---------
+Each host should run two catalogue servers for each environment. This allows one of the catalogue servers
+to be reconfigured and restarted, while the other can continue serving client and services.
+
+When designing how the catalogue servers peer with each other it is recommended to let each catalogue server
+in a cluster connect to two 'master' catalogue servers. And let all 'master' catalogue connect to each other.
+This allows a net-split to be detected reliable but also robust enough when a server fails or is shutdown
+for maintenance.
+
+Connection which are broken should be reestablished within a few seconds with an exponential back-off
+up to a maximum of 5 minutes.
+
+Services keep a connection open to the catalogue server to keep it registration, when the connection is lost
+the registration is deleted quickly from the database. This way when a service is shutdown or fails or 
+the connection is automatically broken.
+
+No multicast
+------------
+
+Separation of environments
+--------------------------
+A catalogue server will communicate to everything that connects to it the environment for which it is
+configured. If the environment doesn't match the connecting application should shut down the connection
+immediately and log the error.
+
+
