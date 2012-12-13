@@ -1,0 +1,70 @@
+Services Catalogue
+==================
+
+Every host will run a catalogue server. The catalogue servers can talk to each other and share the complete
+catalogue which each other.
+
+Local services will have a connection with the local catalogue server and register, if a service loses the
+connection the service will be removed from the catalogue. The local service may also use this connection
+to request update for services it wants to use.
+
+CATALOGUE TO CATALOGUE PROTOCOL
+===============================
+Each catalogue needs to keep track of the complete topology of catalogue server connections.
+This way each server can detect a network partition and keep its services up to date what services
+can be contacted.
+
+The catalogue keeps track of three types of information:
+- Link information
+- Service information
+
+Each of these are propagated throughout the network by having each catalogue server send a copy of the whole
+known database to each of its neighbours. However each piece of information is only allowed to be send once.
+Therefor it needs to keep track to which is piece of information it is send. It also has to keep track of deleted
+items to make sure it doesn't send information about the deletion twice, it may through deleted information away
+after a suitable waiting time.
+
+
+WELCOME
+-------
+A catalogue server will start a conversation with a welcome message, if catalogue servers
+are on both sides of the connection then both will send a welcome message. The client side
+will not send a welcome message.
+
+Each catalogue server has a globally unique URI, based on the location on the listening address
+of the server. Recommended URI is as follows x-tvnetcs://<host_name>:<port>/
+
+The cluster id is a name for the cluster it is in, this allows clients which are connected to prioritize
+on local services based on the catalogue URI which means the service is local on the host, or cluster id
+which is local inside the cluster.
+
+The environment id is a way to separate service networks, for example a production environment and a development
+environment. If the environment of both sides of the connection do not match the connection must be broken
+immediately and not be automatically reconnected.
+
+0 <catalogue URI> <cluster id> <environment id>
+
+LINK INFORMATION
+----------------
+
+Add link (A id is lower than B id)
+3 <catalogue A URI> <catalogue B URI> <ts>
+
+Delete link (A id is lower than B id)
+4 <catalogue A URI> <catalogue B URI> <ts>
+
+SERVICE INFORMATION
+-------------------
+
+Add service
+5 <service URI> <catalogue URI> <cluster id> <ts>
+
+Delete service
+6 <service URI> <catalogue URI> <cluster id> <ts>
+
+Register service
+7 <service URI>
+
+Subscribe service
+8 <service URI regex> 
+
