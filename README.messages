@@ -1,0 +1,38 @@
+
+Client to catalogue, service to catalogue and inter catalogue communication is handled by the same protocol.
+The protocol is a human readable line based protocol. Since most of the content of the messages are strings it
+doesn't make much sense to use a binary protocol.
+
+The protocol uses ASCII encoding; this allows for more easy processing, however all fields are interpreted
+as byte arrays, so you may enter UTF-8 encoded characters in the mix if you wish.
+
+Each message/line is terminated with a single line-feed '\n' character, a carriage return '\r' character is
+ignored by the receiver to allow debugging using telnet.  All fields in a message are separated with
+a space ' ' character; this means that a field may not contain any spaces.
+
+Spaces in fields must be escaped, for URI fields are already standard percent encoded. Other fields should
+also be encoded using percent encoding. URI fields for services are kept in normalized url encoded form on
+the service, so the regular expression in the subscribe service message must search for the encoded form and
+thus will not contains spaces or line-feeds either.
+
+line ::= message <LF>
+       | message <CR> <LF>
+       ;
+
+message ::= welcome_message
+          | add_link_message
+          | del_link_message
+          | add_service_message
+          | del_service_message
+          | register_service_message
+          | subscribe_service_message
+          ;
+
+welcome_message          ::= "WELCOME" catalogue_name cluster_name environment_name;
+add_link_message         ::= "ADD_LINK" catalogue_name catalogue_name timestamp;
+del_link_message         ::= "DEL_LINK" catalogue_name catalogue_name timestamp;
+add_service_message      ::= "ADD_SERV" service_uri catalogue_name timestamp;
+del_service_message      ::= "DEL_SERV" service_uri catalogue_name timestamp;
+register_service_message ::= "REG_SERV" service_uri;
+subribe_service_message  ::= "SUB_SERV" service_regex;
+
