@@ -1,70 +1,54 @@
-Services Catalogue
-==================
-
-Every host will run a catalogue server. The catalogue servers can talk to each other and share the complete
-catalogue which each other.
-
-Local services will have a connection with the local catalogue server and register, if a service loses the
-connection the service will be removed from the catalogue. The local service may also use this connection
-to request update for services it wants to use.
-
-CATALOGUE TO CATALOGUE PROTOCOL
-===============================
-Each catalogue needs to keep track of the complete topology of catalogue server connections.
-This way each server can detect a network partition and keep its services up to date what services
-can be contacted.
-
-The catalogue keeps track of three types of information:
-- Link information
-- Service information
-
-Each of these are propagated throughout the network by having each catalogue server send a copy of the whole
-known database to each of its neighbours. However each piece of information is only allowed to be send once.
-Therefor it needs to keep track to which is piece of information it is send. It also has to keep track of deleted
-items to make sure it doesn't send information about the deletion twice, it may through deleted information away
-after a suitable waiting time.
 
 
-WELCOME
--------
-A catalogue server will start a conversation with a welcome message, if catalogue servers
-are on both sides of the connection then both will send a welcome message. The client side
-will not send a welcome message.
+Messages
+========
 
-Each catalogue server has a globally unique URI, based on the location on the listening address
-of the server. Recommended URI is as follows x-tvnetcs://<host_name>:<port>/
+Welcome message
+---------------
+Once a connection is opened to the catalogue server, the catalogue server will send a WELCOME
+message giving its name, the name of the cluster and the name of the environment.
 
-The cluster id is a name for the cluster it is in, this allows clients which are connected to prioritize
-on local services based on the catalogue URI which means the service is local on the host, or cluster id
-which is local inside the cluster.
+If the client does not like the environment it should disconnect immediately, report it to
+a log file and not try to reconnect automatically.
 
-The environment id is a way to separate service networks, for example a production environment and a development
-environment. If the environment of both sides of the connection do not match the connection must be broken
-immediately and not be automatically reconnected.
+Peer message
+------------
+The peer message is send by the catalogue server that is connecting to its neighbour. After this message
+the catalogue will switch to TLS communication and certificates on both side of the connection are checked
+against a common CA. If the CA check fails the communication is broken and the failure is logged.
 
-0 <catalogue URI> <cluster id> <environment id>
+After a peer message both sides will start to transfer the database, unless the peers were already reachable
+to each other via an existing connection.
 
-LINK INFORMATION
-----------------
+NOTE: in debug mode the peer message does not cause the connection to continue work in TLS..
 
-Add link (A id is lower than B id)
-3 <catalogue A URI> <catalogue B URI> <ts>
+Add/Delete link message
+-----------------------
+Link messages are send when two catalogues are being connected or disconnected. The two catalogue names
+in the message are unordered. Internally the catalogue server must see both possible orders as the same.
+A link message is propagated to the other peers only when the message is newer; based on the time stamp.
 
-Delete link (A id is lower than B id)
-4 <catalogue A URI> <catalogue B URI> <ts>
+Internally delete-messages need to be stored so that it will not be propagated twice. Delete messages may
+be removed from the internal list after 60 minutes.
 
-SERVICE INFORMATION
--------------------
+Add/Delete service message
+--------------------------
 
-Add service
-5 <service URI> <catalogue URI> <cluster id> <ts>
 
-Delete service
-6 <service URI> <catalogue URI> <cluster id> <ts>
+Register service message
+------------------------
+A service can register itself on the catalogue server. This message may only be send on a UNIX domain
+socket, the server will use getpeereid() to check if the connecting process is allowed to register the
+service.
 
-Register service
-7 <service URI>
+NOTE: in debug mode the register message may be used on a TCP/IP connection without uid authentication.
 
-Subscribe service
-8 <service URI regex> 
+Subscribe service message
+-------------------------
+A client can subscribe for real-time update for service locations. Searching for services is done
+through regular expressions matching the URI of a service. Add/Delete messages will be forwarded
+to the client which match the regular expression.
+
+
+
 

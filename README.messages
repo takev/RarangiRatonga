@@ -20,6 +20,7 @@ line ::= message <LF>
        ;
 
 message ::= welcome_message
+          | peer_message
           | add_link_message
           | del_link_message
           | add_service_message
@@ -29,6 +30,7 @@ message ::= welcome_message
           ;
 
 welcome_message          ::= "WELCOME" catalogue_name cluster_name environment_name;
+peer_message             ::= "PEER" catalogue_name cluster_name environment_name
 add_link_message         ::= "ADD_LINK" catalogue_name catalogue_name timestamp;
 del_link_message         ::= "DEL_LINK" catalogue_name catalogue_name timestamp;
 add_service_message      ::= "ADD_SERV" service_uri catalogue_name timestamp;
