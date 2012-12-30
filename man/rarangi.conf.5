@@ -1,0 +1,99 @@
+.Dd December 19, 2012
+.Dt RARANGI.CONF 5
+.Os
+.Sh NAME
+.Nm rarangi.conf
+.Nd The configuration file for
+.Tn Rarangi Ratonga
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+file contains options used to specify
+.Tn Rarangi Ratonga
+server and client configuration and tuning.
+.Pp
+Each line contains an option field and a value field, seperated by
+and equals character '='. For example:
+.Bd -literal -offset indent
+option = value
+.Ed
+.Pp
+Each line specifies a single option/value pair.
+Option/value pairs are placed inside a section a section is started
+with a title surrounded by bracket characters '[' and ']'. For example:
+.Bd -literal -offset indent
+[production]
+.Ed
+.Pp
+A special [DEFAULT] section may be used to specify default option/values for
+sections which do not contain that option.
+Whitespace can be used freely before and after fields.
+A hash character '#' begins a comment that extends to the end of the line.
+Lines containing only whitespace or comments are ignored.
+The file format is intended to be very much like MS Windows .ini files.
+.Pp
+The options are:
+.Bl -tag -width -indent
+.It Cm bind_tcp
+The TCP address and port number for the server to bind on, and for clients to connect to.
+If the address is omitted then INADDR_ANY is used. The address may be a name, an IPv4 address
+or an IPv6 address. For example:
+.Bl -bullet -compact
+.It
+12345
+.It
+foo.bar.com:12345
+.It
+12.34.56.78:12345
+.It
+[2001::23]:12345
+.El
+If a name or INADDR_ANY resolved in multiple IPv4 or IPv6 addresses than the server will listen
+on all these addressed.
+.It Cm bind_unix
+The file system path of the UNIX domain stream for the server to listen on, and for clients to
+connect to.
+.It Cm peer
+The TCP address and port number for the server to connect to. If the port number is omitted than
+the same port number listed on the bind_tcp options will be used to connect to the remote host.
+Peers that match the <side>.<i>.bind_tcp option are ignored.
+.It Cm allow_tcp
+IP addresses range who are allowed to access this server. This should be written down as either
+a IPv4 CIDR or IPv6 CIDR notation, example:
+.Bl -bullet -compact
+.It
+12.34.56.78/16
+.It
+2001:12a:2222::/48
+.El
+By default everything is rejected, subsequent allow and rejects are processed in-order.
+.It Cm reject_tcp
+Reject an IP address range, see allow_tcp.
+.It Cm allow_uid
+Allow a user access to the server. The uid is either a name or a user id number. By default
+no-one and no-group is allowed access, subsequent allow and rejects are processed in-order.
+Uid and Gid are processed together, so it is possible to allow a group and then reject a user
+from this group in a subsequent reject_uid command.
+.It Cm reject_uid
+Reject a user access to the server. See allow_uid.
+.It Cm allow_gid
+Allow a group access to the server. The gid is either a name or a group id number. See
+allow_uid
+.It Cm reject_gid
+Reject a group access to the serrver. See allow_gid
+.It Cm ca_path
+Path to the file with the certificate authority to authenticate TLS/TCP connections with.
+.It Cm cert_path
+Path to the file used as a private-key/certificate for TLS/TCP authentication.
+.El
+.Sh FILES
+.Bl -tag -width "/etc/rarangi.conf" -compact
+.It Pa /etc/rarangi.conf
+The
+.Tn Rarangi Ratonga
+configuration file.
+.El
+.Sh SEE ALSO
+.Xr rarangid 8

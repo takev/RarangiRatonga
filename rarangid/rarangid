@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+import socket
+import os
+import sys
+import options
+from MainLoop import MainLoop
+from ServerSocketDispatcher import ServerSocketDispatcher
+from RarangiDispatcher import RarangiDispatcher
+
+
+def main():
+    options.parse_options(sys.argv[1:])
+    options.parse_config(options.config_path, options.catalogue_name)
+
+    l = MainLoop()
+
+    for item in options.listen:
+        print("listening to:", item)
+        family = item[0]
+        if family == socket.AF_UNIX:
+            address = item[1]
+            try:
+                os.unlink(address)
+            except OSError:
+                pass
+        elif family in (socket.AF_INET, socket.AF_INET6):
+            address = (item[1], item[2])
+
+        else:
+            raise RuntimeError("Unknown address family %i", family)
+
+        print("address:", address)
+        fd = socket.socket(family, socket.SOCK_STREAM)
+        fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            fd.bind(address)
+        except socket.error:
+            continue
+        fd.listen(5)
+        l.add(ServerSocketDispatcher(fd, RarangiDispatcher))
+
+    l.loop()
+
+
+
+if __name__ == "__main__":
+    main()

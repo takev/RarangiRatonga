@@ -33,7 +33,11 @@ be removed from the internal list after 60 minutes.
 
 Add/Delete service message
 --------------------------
+Service messages are send when two catalogues get connected, or when services are start or stopped.
+A broken link between two catalogues do not cause delete service messages between catalogues.
 
+Add/Delete service messages will also be send to subscribed clients, these messages will also be send when
+caused by link breakages between catalogues; this is counter to what happens between catalogues.
 
 Register service message
 ------------------------

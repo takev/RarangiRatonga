@@ -1,0 +1,48 @@
+.Dd Dec 20, 2012
+.Dt RARANGID 8 
+.Os
+.Sh NAME
+.Nm rarangid
+.Nd
+Distributed Catalogue server
+.Sh SYNOPSIS
+.Nm
+.Op Fl dfVv
+.Op Fl c Ar config_file
+.Ar environment
+.Ar side
+.Sh DESCRIPTION
+.Nm
+is the Distributed Catalogue server.
+.Pp
+Available options:
+.Bl -tag -width Ds
+.It Fl d
+Debug mode allows turns off TLS authentication, so that commands may be issued using
+.Xr telnet 1 .
+.It Fl f
+Keep process in the foreground, i.e. do not daemonize the process. This will also
+log to the attached terminal.
+.It Fl V
+Display version number and exit.
+.It Fl v
+Run with verbose logging.
+.It Fl c Ar config_file
+Set the configuration file to
+.Ar config_file .
+.It Ar environment
+The environment the catalogue is serving. This is used to make logical distinction
+between production and testing environment while running on the same host.
+.It Ar side
+For redundancy multiple catalogue servers should be running on each host, 
+.Ar side
+gives the name for this instance.
+.Sh FILES
+.Bl -tag -width /etc/rarangi.conf -compact
+.It Pa /etc/rarangi.conf
+Configuration file for the rarangi catalogue server and clients.
+.El
+.Sh SEE ALSO
+.Xr rarangi.conf 5
+.Sh STANDARDS
+The protocol is described in. 
