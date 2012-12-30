@@ -2,8 +2,14 @@
 from datetime import datetime
 
 class Dispatcher (object):
-    def __init__(self, fd):
+    def __init__(self, fd=None):
+        print("dispatcher fd", fd)
         self.fd = fd
+        self.auto_reconnect = False
+        self.last_retry = datetime.now()
+
+    def connected(self):
+        return self.fd is not None
 
     def fileno(self):
         """Return a file discriptor so an instance of Dispatcher can be used directly in a select call.
@@ -58,7 +64,13 @@ class Dispatcher (object):
         """The connection must be closed.
         This function should be called by subclass to close the connection and remove it from the main loop.
         """
+        print("closing")
         if hasattr(self, "main_loop"):
-            self.main_loop.remove(self)
-            self.fd.close()
+            if self.fd is not None:
+                self.last_retry = datetime.now()
+                fd = self.fd
+                self.fd = None
+                fd.close()
 
+            if not self.auto_reconnect:
+                self.main_loop.remove(self)

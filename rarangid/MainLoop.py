@@ -22,9 +22,10 @@ class MainLoop (object):
 
         # Build up lists of things to wait for.
         for dispatcher in self.dispatchers:
-            if dispatcher.readable(): readers.append(dispatcher)
-            if dispatcher.writable(): writers.append(dispatcher)
-            if dispatcher.exceptionable(): exceptions.append(dispatcher)
+            if dispatcher.connected():
+                if dispatcher.readable():      readers.append(dispatcher)
+                if dispatcher.writable():      writers.append(dispatcher)
+                if dispatcher.exceptionable(): exceptions.append(dispatcher)
             if dispatcher.timer() < datetime.max: timers.append(dispatcher)
 
         # Find out the next timeout moment for select.

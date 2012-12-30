@@ -3,8 +3,8 @@ import inspect
 from LineSocketDispatcher import LineSocketDispatcher
 
 class RarangiDispatcher (LineSocketDispatcher):
-    def __init__(self, fd):
-        LineSocketDispatcher.__init__(self, fd)
+    def __init__(self, sock_family, sock_type, remote_address, fd=None):
+        LineSocketDispatcher.__init__(self, sock_family, sock_type, remote_address, fd)
 
     def handle_command_WELCOME(self, catalogue_name, cluster_name, environment_name):
         print("welcome", catalogue_name, cluster_name, environment_name)

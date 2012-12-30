@@ -5,8 +5,15 @@ from Dispatcher import Dispatcher
 from Buffer import Buffer
 
 class StreamSocketDispatcher (Dispatcher):
-    def __init__(self, fd):
+    def __init__(self, sock_family, sock_type, remote_address, fd=None):
         Dispatcher.__init__(self, fd)
+        self.sock_family = sock_family
+        self.sock_type = sock_type
+        self.remote_address = remote_address
+        if self.fd is None:
+            raise NotImplementedError("Can not connect yet.")
+
+
         self.read_buffer = Buffer(4096)
         self.write_buffer = Buffer(4096)
         try:
@@ -36,8 +43,4 @@ class StreamSocketDispatcher (Dispatcher):
         sent = self.write_buffer.send_outoff(self.fd)
         if sent == 0:
             self.handle_close()
-
-    def handle_close(self):
-        self.fd.close()
-        Dispatcher.handle_close(self)
 

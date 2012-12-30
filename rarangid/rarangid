@@ -15,30 +15,11 @@ def main():
 
     l = MainLoop()
 
-    for item in options.listen:
-        print("listening to:", item)
-        family = item[0]
-        if family == socket.AF_UNIX:
-            address = item[1]
-            try:
-                os.unlink(address)
-            except OSError:
-                pass
-        elif family in (socket.AF_INET, socket.AF_INET6):
-            address = (item[1], item[2])
-
-        else:
-            raise RuntimeError("Unknown address family %i", family)
-
-        print("address:", address)
-        fd = socket.socket(family, socket.SOCK_STREAM)
-        fd.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    for sock_family, bind_address in options.listen:
         try:
-            fd.bind(address)
+            l.add(ServerSocketDispatcher(sock_family, socket.SOCK_STREAM, bind_address , RarangiDispatcher))
         except socket.error:
             continue
-        fd.listen(5)
-        l.add(ServerSocketDispatcher(fd, RarangiDispatcher))
 
     l.loop()
 

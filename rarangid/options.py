@@ -67,27 +67,27 @@ def parse_address(item):
     if item.isdigit():
         port = int(item)
         return {
-            (socket.AF_INET, "0.0.0.0", port),
-            (socket.AF_INET6, "::", port)
+            (socket.AF_INET, ("0.0.0.0", port)),
+            (socket.AF_INET6, ("::", port))
         }
 
     m = re.match(r"\[([0-9a-fA-F:]+)\]:([0-9]+)", item)
     if m is not None:
         ipv6_address = m.group(1)
         port = int(m.group(2))
-        return {(socket.AF_INET6, ipv6_address, port)}
+        return {(socket.AF_INET6, (ipv6_address, port))}
 
     m = re.match(r"([0-9.]+):([0-9]+)", item)
     if m is not None:
         ipv4_address = m.group(1)
         port = int(m.group(2))
-        return {(socket.AF_INET, ipv4_address, port)}
+        return {(socket.AF_INET, (ipv4_address, port))}
 
     m = re.match(r"([-.a-zA-Z0-9]+):([0-9]+)", item)
     if m is not None:
         hostname = m.group(1)
         port = int(m.group(2))
-        return {(f, a[0], a[1]) for f, t, p, c, a in socket.getaddrinfo(hostname, port) if f in (socket.AF_INET, socket.AF_INET6)}
+        return {(f, (a[0], a[1])) for f, t, p, c, a in socket.getaddrinfo(hostname, port) if f in (socket.AF_INET, socket.AF_INET6)}
 
     raise SyntaxError("Could not parse address '%s'" % item)
 

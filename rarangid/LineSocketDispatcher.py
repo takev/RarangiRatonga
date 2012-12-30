@@ -4,13 +4,13 @@ from StreamSocketDispatcher import StreamSocketDispatcher
 from utils import findall, previous, last
 
 class LineSocketDispatcher (StreamSocketDispatcher):
-    def __init__(self, fd):
-        StreamSocketDispatcher.__init__(self, fd)
+    def __init__(self, sock_family, sock_type, remote_address, fd=None):
+        StreamSocketDispatcher.__init__(self, sock_family, sock_type, remote_address, fd)
         self.read_lines = []
         self.write_lines = []
 
     def writable(self):
-        return self.write_lines or StreamSocketDispatcher.writable(self)
+        return StreamSocketDispatcher.writeable(self) or self.write_lines
 
     def handle_read(self):
         StreamSocketDispatcher.handle_read(self)
