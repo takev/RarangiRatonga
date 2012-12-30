@@ -10,9 +10,10 @@ class StreamSocketDispatcher (Dispatcher):
         self.sock_family = sock_family
         self.sock_type = sock_type
         self.remote_address = remote_address
+        self.just_connected = fd is not None
+
         if self.fd is None:
             raise NotImplementedError("Can not connect yet.")
-
 
         self.read_buffer = Buffer(4096)
         self.write_buffer = Buffer(4096)

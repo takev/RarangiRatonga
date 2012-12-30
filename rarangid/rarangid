@@ -8,10 +8,9 @@ from MainLoop import MainLoop
 from ServerSocketDispatcher import ServerSocketDispatcher
 from RarangiDispatcher import RarangiDispatcher
 
-
 def main():
     options.parse_options(sys.argv[1:])
-    options.parse_config(options.config_path, options.catalogue_name)
+    options.parse_config(options.config_path, options.catalogue)
 
     l = MainLoop()
 

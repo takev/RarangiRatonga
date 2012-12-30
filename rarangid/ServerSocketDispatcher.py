@@ -28,5 +28,6 @@ class ServerSocketDispatcher (Dispatcher):
     def handle_read(self):
         (new_fd, new_address) = self.fd.accept()
         new_dispatcher = self.factory(self.sock_family, self.sock_type, new_address, fd=new_fd)
+        new_dispatcher.handle_accept()
         self.main_loop.add(new_dispatcher)
 

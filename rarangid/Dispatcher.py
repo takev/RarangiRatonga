@@ -40,25 +40,29 @@ class Dispatcher (object):
         """Handle a read event.
         The select call has found that there is data in the read buffer.
         """
-        raise NotImplementedError("handle_read")
 
     def handle_write(self):
         """Handle a write event.
         The select call has found that there is room for data in the write buffer.
         """
-        raise NotImplementedError("handle_write")
 
     def handle_exception(self):
         """Handle a exception event.
         The select call has found that something exceptionable is happening.
         """
-        raise NotImplementedError("handle_exception")
+
+    def handle_accept(self):
+        """Handle a connection event.
+        """
+
+    def handle_connect(self):
+        """Handle a connection event.
+        """
 
     def handle_timer(self):
         """Handle a timer event.
         The select call has timed-out and the main loop is found this instance to be handling it.
         """
-        raise NotImplementedError("handle_timer")
 
     def handle_close(self):
         """The connection must be closed.

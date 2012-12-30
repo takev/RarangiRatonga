@@ -30,7 +30,7 @@ class MainLoop (object):
 
         # Find out the next timeout moment for select.
         timers.sort(key=lambda x: x.timer())
-        timeout = (next_timers[0].timer() - datetime.now()).total_seconds() if timers else 3600.0
+        timeout = (timers[0].timer() - datetime.now()).total_seconds() if timers else 3600.0
 
         # Check which dispatcher should handle events.
         print("enter select")

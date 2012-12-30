@@ -10,6 +10,7 @@ import utils
 import configparser
 import socket
 import re
+from datetime import timedelta
 
 config_path = "/etc/rarangi.ini"
 version = "1.0"
@@ -17,7 +18,10 @@ verbose = False
 foreground = False
 show_usage = False
 
-catalogue_name = None
+heartbeat_interval = timedelta.max
+heartbeat_timeout = timedelta.max
+
+catalogue = None
 environment = None
 listen = set()
 connect = set()
@@ -34,7 +38,7 @@ LONG_OPTIONS = [
 USAGE_TEMPLATE = """Real-time service catalogue daemon
 
 Usage:
-    {bin_name} [OPTIONS ...] <catalogue_name>
+    {bin_name} [OPTIONS ...] <catalogue>
 
 If a long options shows an argument as mandatory, then it is mandatory
 for the equivalent short option also. Similarly for optional arguments.
@@ -91,21 +95,25 @@ def parse_address(item):
 
     raise SyntaxError("Could not parse address '%s'" % item)
 
-def parse_config(config_path, catalogue_name):
+def parse_config(config_path, catalogue):
     global address
     global cluster
     global environment
     global address
     global listen
     global connect
+    global heartbeat_interval
+    global heartbeat_timeout
 
     p = configparser.RawConfigParser()
     p.read(config_path)
 
-    cluster      = utils.sanitize_string(p.get(catalogue_name, "cluster"))
-    environment  = utils.sanitize_string(p.get(catalogue_name, "environment"))
-    listen_list  = utils.sanitize_string(p.get(catalogue_name, "listen"))
-    connect_list = utils.sanitize_string(p.get(catalogue_name, "connect"))
+    cluster      = utils.sanitize_string(p.get(catalogue, "cluster"))
+    environment  = utils.sanitize_string(p.get(catalogue, "environment"))
+    heartbeat_interval = timedelta(seconds=int(utils.sanitize_string(p.get(catalogue, "heartbeat_interval"))))
+    heartbeat_timeout = timedelta(seconds=int(utils.sanitize_string(p.get(catalogue, "heartbeat_timeout"))))
+    listen_list  = utils.sanitize_string(p.get(catalogue, "listen"))
+    connect_list = utils.sanitize_string(p.get(catalogue, "connect"))
 
     for item in listen_list.split(" "):
         listen.update(parse_address(item))
@@ -121,7 +129,7 @@ def parse_options(args):
     """
 
     global show_usage
-    global catalogue_name
+    global catalogue
     global version
     global verbose
     global config_path
@@ -151,8 +159,8 @@ def parse_options(args):
 
     # Parse mandatory arguments.
     if len(args) > 0:
-        catalogue_name = utils.sanitize_string(args[0])
-    if catalogue_name is None:
+        catalogue = utils.sanitize_string(args[0])
+    if catalogue is None:
         print("ERROR: Expected mandatory catalogue name as argument", file=sys.stderr)
         usage(2)
 
