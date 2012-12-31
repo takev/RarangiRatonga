@@ -20,6 +20,7 @@ show_usage = False
 
 heartbeat_interval = timedelta.max
 heartbeat_timeout = timedelta.max
+reconnect_interval = timedelta.max
 
 catalogue = None
 environment = None
@@ -104,6 +105,7 @@ def parse_config(config_path, catalogue):
     global connect
     global heartbeat_interval
     global heartbeat_timeout
+    global reconnect_interval
 
     p = configparser.RawConfigParser()
     p.read(config_path)
@@ -112,6 +114,7 @@ def parse_config(config_path, catalogue):
     environment  = utils.sanitize_string(p.get(catalogue, "environment"))
     heartbeat_interval = timedelta(seconds=int(utils.sanitize_string(p.get(catalogue, "heartbeat_interval"))))
     heartbeat_timeout = timedelta(seconds=int(utils.sanitize_string(p.get(catalogue, "heartbeat_timeout"))))
+    reconnect_interval = timedelta(seconds=int(utils.sanitize_string(p.get(catalogue, "reconnect_interval"))))
     listen_list  = utils.sanitize_string(p.get(catalogue, "listen"))
     connect_list = utils.sanitize_string(p.get(catalogue, "connect"))
 

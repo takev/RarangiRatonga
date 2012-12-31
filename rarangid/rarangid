@@ -4,6 +4,7 @@ import socket
 import os
 import sys
 import options
+from datetime import datetime
 from MainLoop import MainLoop
 from ServerSocketDispatcher import ServerSocketDispatcher
 from RarangiDispatcher import RarangiDispatcher
@@ -16,9 +17,12 @@ def main():
 
     for sock_family, bind_address in options.listen:
         try:
-            l.add(ServerSocketDispatcher(sock_family, socket.SOCK_STREAM, bind_address , RarangiDispatcher))
+            l.add(ServerSocketDispatcher(sock_family, socket.SOCK_STREAM, bind_address, RarangiDispatcher))
         except socket.error:
             continue
+
+    for sock_family, remote_address in options.connect:
+        l.add(RarangiDispatcher(sock_family, socket.SOCK_STREAM, remote_address))
 
     l.loop()
 

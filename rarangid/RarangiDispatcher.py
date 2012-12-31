@@ -1,4 +1,5 @@
 
+import sys
 import inspect
 import options
 from datetime import datetime
@@ -10,27 +11,38 @@ class RarangiDispatcher (LineSocketDispatcher):
         self.heartbeat_sent = datetime.now()
         self.heartbeat_received = datetime.now()
 
+    def reset(self):
+        LineSocketDispatcher.reset(self)
+        self.heartbeat_sent = datetime.now()
+        self.heartbeat_received = datetime.now()
+
     def timer(self):
         t1 = LineSocketDispatcher.timer(self)
-        t2 = self.heartbeat_sent + options.heartbeat_interval
-        t3 = self.heartbeat_received + options.heartbeat_timeout
+        t2 = self.heartbeat_sent + options.heartbeat_interval    if self.connected() else datetime.max
+        t3 = self.heartbeat_received + options.heartbeat_timeout if self.connected() else datetime.max
         return min(t1, t2, t3)
 
     def handle_timer(self):
-        if (datetime.now() >= self.heartbeat_sent + options.heartbeat_interval):
-            self.send("HEARTBEAT")
-            self.heartbeat_sent = datetime.now()
-
-        if (datetime.now() >= self.heartbeat_received + options.heartbeat_timeout):
-            self.handle_close()
-
         LineSocketDispatcher.handle_timer(self)
+        if self.connected():
+            if (datetime.now() >= self.heartbeat_sent + options.heartbeat_interval):
+                self.send("HEARTBEAT")
+                self.heartbeat_sent = datetime.now()
+
+            if (datetime.now() >= self.heartbeat_received + options.heartbeat_timeout):
+                print("ERROR: Missed to many heartbeats, closing connect.", file=sys.stderr)
+                self.handle_close()
 
     def handle_command_HEARTBEAT(self):
         self.heartbeat_received = datetime.now()
 
     def handle_command_WELCOME(self, catalogue_name, cluster_name, environment_name):
         print("welcome", catalogue_name, cluster_name, environment_name)
+        if catalogue_name == options.catalogue:
+            print("ERROR: Connected to self.", file=sys.stderr)
+            self.auto_reconnect = False
+            self.handle_close()
+
 
     def handle_read(self):
         LineSocketDispatcher.handle_read(self)

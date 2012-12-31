@@ -1,6 +1,7 @@
 
 import utils
 import socket
+import sys
 from Dispatcher import Dispatcher
 from Buffer import Buffer
 
@@ -10,19 +11,19 @@ class StreamSocketDispatcher (Dispatcher):
         self.sock_family = sock_family
         self.sock_type = sock_type
         self.remote_address = remote_address
-        self.just_connected = fd is not None
-
-        if self.fd is None:
-            raise NotImplementedError("Can not connect yet.")
-
         self.read_buffer = Buffer(4096)
         self.write_buffer = Buffer(4096)
-        try:
+        self.uid = None
+        self.gids = set()
+
+        # For AF_UNIX sockets find out the uid/gids of the caller.
+        if self.fd is not None and self.sock_family == socket.AF_UNIX:
             self.uid = utils.get_peer_uid(fd)
             self.gids = utils.uid_gids.get(self.uid, [])
-        except (OSError, socket.error):
-            self.uid = None
-            self.gids = set()
+
+        # Connect if this is client side.
+        if self.client:
+            self.handle_connect()
 
         print("uid:", self.uid, self.gids)
 
@@ -31,6 +32,15 @@ class StreamSocketDispatcher (Dispatcher):
 
     def writeable(self):
         return not self.write_buffer.empty()
+
+    def handle_connect(self):
+        Dispatcher.handle_connect(self)
+        try:
+            fd = socket.socket(self.sock_family, self.sock_type)
+            fd.connect(self.remote_address)
+            self.fd = fd
+        except socket.error as e:
+            print("ERROR could not open socket %s, %s" % (e, self), file=sys.stderr)
 
     def handle_read(self):
         received = self.read_buffer.recv_into(self.fd)
